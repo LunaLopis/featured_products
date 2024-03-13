@@ -21,7 +21,6 @@ return new class extends Migration
             $table->char('ean_code', 13);
             $table->double('price', 5,2);
             $table->boolean('in_evidence');
-            $table->date('last_edit');
             $table->timestamps();
         });
     }
