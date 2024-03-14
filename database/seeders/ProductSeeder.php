@@ -7,7 +7,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Product;
 use App\Models\Category;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 
 class ProductSeeder extends Seeder
 {
@@ -18,35 +18,20 @@ class ProductSeeder extends Seeder
      */
     public function run(Faker $faker)
     {
-        // $dateTime = $faker->dateTimeBetween()->format('Y-m-d');
-        // $categories = Category::all()->pluck('id')->toArray();
-        // $product = new Product();
-        // $product->category_id = 1;
-        // $product->name = $faker->words(2, true);
-        // $product->description = $faker->text(400);
-        // $product->image = $faker->imageUrl(360, 360, 'animals', true);
-        // $product->ean_code = $faker->ean13();
-        // $product->price = $faker->randomFloat(2, 0, 999);
-        // $product->in_evidence = DB::table('products')->count() <= 5 ? 1 : 0;
-        // $product->created_at = $dateTime . ' ' . $faker->time(); 
-        // $product->updated_at = $faker->dateTimeBetween($dateTime, 'now')->format('Y-m-d H:i:s');
-        // $product->save();
-
-
-        for ($i=0; $i < 100 ; $i++) { 
-            $dateTime = $faker->dateTimeBetween()->format('Y-m-d');
-            $categories = Category::all()->pluck('id')->toArray();
-            $product = new Product();
-            $product->category_id = $faker->numberBetween(1, count($categories));
-            $product->name = $faker->words(2, true);
-            $product->description = $faker->text(400);
-            $product->image = $faker->imageUrl(360, 360, 'animals', true);
-            $product->ean_code = $faker->ean13();
-            $product->price = $faker->randomFloat(2, 0, 999);
-            $product->in_evidence = DB::table('products')->count() < 5 ? 1 : 0;
-            $product->created_at = $dateTime . ' ' . $faker->time(); 
-            $product->updated_at = $faker->dateTimeBetween($dateTime, 'now')->format('Y-m-d H:i:s');
-            $product->save();
+        $categories = Category::count();
+        $array_category = [];
+        for ($i=1; $i <= $categories; $i++) { 
+            $array_category[] = ['category_id'=> $i];
         }
+
+        $product = Product::factory()
+                ->count(100)
+                ->state(new Sequence(
+                    fn ($sequence) => ['in_evidence' => $sequence->index < 5 ? 1 : 0],
+                ))
+                ->state(new Sequence(
+                 ...$array_category   
+                ))
+                ->create();
     }
 }
