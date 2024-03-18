@@ -29,6 +29,7 @@ class ProductFactory extends Factory
     {
 
         $dateTime = fake()->dateTimeBetween()->format('Y-m-d');
+        
         return [
             'name' => fake()->words(2, true),
             'description' => fake()->text(400),
