@@ -16,7 +16,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::paginate(15);
+        $products = Product::paginate(10);
         return view('productIndex', compact('products'));
     }
 
@@ -48,8 +48,8 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        $product = $id;
+    {       
+        $product = Product::select('id', 'name', 'description', 'category_id', 'image')->where('id', '=', $id)->first();
        return view('ProductShow', compact('product'));
     }
 
