@@ -17,5 +17,4 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 
-Route::resource('/', ProductController::class);
-
+Route::resource('product', ProductController::class);
