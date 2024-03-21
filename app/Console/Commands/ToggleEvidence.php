@@ -8,68 +8,52 @@ use Illuminate\Console\Command;
 
 class ToggleEvidence extends Command implements PromptsForMissingInput
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'product:evidence {id}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    protected $signature = 'product:evidence {id?*} {--ask}';
+    
     protected $description = 'toggle in_evidence for products';
 
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
-    // public function handle()
-    // {
-    //     $product = Product::find($this->argument('id'));
-      
-    //     if($product){
+    protected function changeState($product){
+        $productChange = Product::select('id','in_evidence')->where('id', $product['id'])->first();
+        $productChange['in_evidence'] = $product['in_evidence'] == true ? false : true;
+        $this->info("la visibilità del product con id:{$product['id']} è stata cambiata");
+        $productChange->save();
+    }
 
-    //         $product->in_evidence = $product->in_evidence == true ? false : true;
-            
-    //         $message = $product->in_evidence == false ? "è stato nascosto!" : "è stato messo in evidenza!";
-            
-    //         $this->info("Il product con id:$product->id $message");
-    //         $product->save();
-            
-    //     }else{
-    //         $this->error("Il product con id:{$this->argument('id')} non è stato trovato" );
-            
-    //     }
-    // }
+    protected function messageGenerated($product){
+        $partial = "Il Product con id:{$product['id']} ";
+        return $product['in_evidence'] === true ? $partial . "è in evidenza, nascondere?" : $partial . "è nascosto, mettere in evidenza?";
+     
+    }
 
-    protected function promptForMissingArgumentsUsing(): array
-{
-    return [
-        'id' => 'Specifica un product ID',
-    ];
-}
 
     public function handle()
     {
-        $product = Product::find($this->argument('id'));
+        if(!$this->argument('id')) return $this->error('Non sono stati selezionati id'); 
+        
+        $products_list = Product::select('id', 'in_evidence')->whereIn('id',$this->argument('id'))->get()->toArray();
       
-        if($product){
+        foreach($products_list as $product){
 
-            $product->in_evidence = $product->in_evidence == true ? false : true;
+            if($this->option('ask')){
+               $response =  $this->choice($this->messageGenerated($product), ['SI', 'NO']);
             
-            $message = $product->in_evidence == false ? "è stato nascosto!" : "è stato messo in evidenza!";
-            
-            $this->info("Il product con id:$product->id $message");
-            $product->save();
-            
-        }else{
-            $this->error("Il product con id:{$this->argument('id')} non è stato trovato" );
-            
-        }
+               if($response === 'SI' ){
+                $this->changeState($product);
+                
+               }else{
+                   $this->info("la visibilità del product con id:{$product['id']} non è stata cambiata");
+                }
+            }else{
+                $this->changeState($product);
+            }
+        } 
+
+        // gestisco gli eventuali id non trovati
+        $paramNumber = $this->argument('id');
+        $idFound = array_column($products_list, 'id');
+        $productNotFound = array_diff($paramNumber,$idFound);
+        
+        if(count($productNotFound) > 0) $this->error("I seguenti product Id non sono stati trovati: " . implode(', ',$productNotFound));
     }
-
 }
