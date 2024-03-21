@@ -13,13 +13,14 @@ class ToggleEvidence extends Command implements PromptsForMissingInput
     
     protected $description = 'toggle in_evidence for products';
 
+    // modigico lo stato del product
     protected function changeState($product){
         $productChange = Product::select('id','in_evidence')->where('id', $product['id'])->first();
         $productChange['in_evidence'] = $product['in_evidence'] == true ? false : true;
         $this->info("la visibilità del product con id:{$product['id']} è stata cambiata");
         $productChange->save();
     }
-
+// compongo l'info nel terminale
     protected function messageGenerated($product){
         $partial = "Il Product con id:{$product['id']} ";
         return $product['in_evidence'] === true ? $partial . "è in evidenza, nascondere?" : $partial . "è nascosto, mettere in evidenza?";
