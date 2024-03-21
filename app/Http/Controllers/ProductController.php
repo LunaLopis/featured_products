@@ -16,7 +16,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::paginate(10);
+        $products = Product::where('in_evidence', true)->paginate(5);
         return view('productIndex', compact('products'));
     }
 
