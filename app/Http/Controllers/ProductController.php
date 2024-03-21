@@ -49,8 +49,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {       
-        $product = Product::select('id', 'name', 'description', 'category_id', 'image')->where('id', '=', $id)->first();
-       return view('ProductShow', compact('product'));
+        $product = Product::select('id', 'name', 'description', 'category_id', 'image')->find($id);
+
+        return view('ProductShow', compact('product'));
     }
 
     /**
